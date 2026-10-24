@@ -7,6 +7,16 @@ description: Tells a student exactly what they need on their remaining work (fin
 
 The moment: the end of the semester is coming and the student wants to know what they need. Give them a real number in one reply. Do the digging yourself; the student should not have to send screenshots of things Canvas already has.
 
+## Golden rule: always answer with numbers
+
+Never reply with only a question or a request for screenshots. Missing information is normal; fill it with the assumptions below, run the calculator, and give the plan. Then, after the numbers, ask at most one short question that would make it exact. An estimate with clear assumptions is far more useful than no answer.
+
+This holds even when the syllabus file can't be opened and Canvas shows only posted grades. Those are the most common cases; handle them with step 3b, not by stopping.
+
+## 0. Check saved rules first
+
+Before reading Canvas, look in Memory and in `$SKILL_DATA_DIR/rules/` for this course's saved grading rules (weights, scale, list of assessments). If found, use them and skip step 3.
+
 ## 1. Find the course
 
 - Match the course name loosely ("agentic ai" → the Canvas course whose name contains it). If several match or none was named, ask with a short numbered list.
@@ -14,7 +24,7 @@ The moment: the end of the semester is coming and the student wants to know what
 
 ## 2. Collect ALL assignments from Canvas
 
-Read every assignment in the course, not just the current grade:
+The Grades view shows only posted marks, so also read the course's Assignments list, Modules and the Canvas calendar for items not graded yet. Read every assignment in the course, not just the current grade:
 - graded items: points earned and points possible, by assignment group
 - ungraded or not-yet-due items: their points possible, by assignment group. These are the "remaining" work.
 
@@ -24,14 +34,50 @@ Never answer with only the overall Canvas percentage; it hides what is still to 
 
 ## 3. Read the syllabus yourself
 
-Look in this order until you find it: the course syllabus page, course pages, Files (PDFs named syllabus, course info, schedule), then announcements. Extract:
+In Canvas, the syllabus is usually the **Syllabus tab** in the course menu, not a file. Its address is:
+
+```
+https://<school-canvas>/courses/<course_id>/assignments/syllabus
+```
+
+(for ASU: `https://canvas.asu.edu/courses/<course_id>/assignments/syllabus`; get `<course_id>` from the Canvas course.)
+
+Try in this order until you find the grading section:
+1. The course syllabus through Canvas, if your Canvas ability returns it.
+2. **Open the Syllabus tab in your browser.** The first time, the student signs in to their school account (they take over the browser for Duo or two-factor); the login is saved for next time. Tell them: "I'll open your Canvas syllabus. Please sign in once in the browser I send; I'll remember it."
+3. While in the browser, also open the course's **Grades** page: it shows every assignment, including ungraded ones (shown as "-/100"), and the "Assignments are weighted by group" table with each group's weight.
+4. Course pages, Modules, Files (search "syllabus", "grading"), and announcements.
+
+Extract:
 - category weights (or note that the course uses total points)
 - the letter grade scale, including plus/minus grades if listed (A+, A, A-…). ASU instructors set their own scale, so always use the syllabus scale.
 - dropped scores, and any work not yet on Canvas (a final paper or exam that appears in the syllabus but not in Canvas assignments). Add those to the categories with "scores": [].
 
 If Canvas assignment groups have weights, they must match the syllabus; if they differ, trust the syllabus and mention it.
 
-Ask the student only for what you truly cannot find, in one short question, and say what you will assume if they don't know (for cutoffs: 90/80/70/60).
+## 3b. When something is missing, assume and keep going
+
+Use these defaults instead of stopping, and list the ones you used in your reply:
+
+- **No letter scale found:** use the common plus/minus scale `{"A+": 97, "A": 93, "A-": 90, "B+": 87, "B": 83, "B-": 80, "C+": 77, "C": 70, "D": 60}`. Say "I assumed A+ = 97%".
+- **No future assignments on Canvas yet** (instructors often publish them later):
+  - A syllabus category with no grades at all → whole category still to come (`"scores": []`).
+  - A category with some grades → use the syllabus schedule to count how many items are left (e.g. "4 reports" and 2 graded → 2 left, each the same points as the graded ones). If the syllabus doesn't say, treat that category as finished and say so.
+- **No weights found:** use the Canvas assignment group weights; if there are none, use `"scheme": "points"`.
+
+Ask the student for nothing up front. After giving the numbers, ask one question about the biggest assumption.
+
+If you couldn't read the syllabus (for example, the student didn't sign in in the browser), end like this:
+> This is an estimate: I assumed A+ = 97% and that the paper is still to come.
+> To make it exact, sign in once so I can read your Canvas Syllabus tab, or paste its grading section here. I'll remember it for next time.
+
+## 3c. Save the rules
+
+When the student sends a syllabus (file or photo) or tells you a cutoff, read it, then save the course's rules so you never ask again:
+- remember them in Memory (e.g. "Agentic AI grading: Project 50, Reports 30, Paper 10, Participation 10; A+ 97")
+- write them to `$SKILL_DATA_DIR/rules/<course>.json` in the calculator format, with `scores` empty
+
+Then immediately recalculate and send the exact plan.
 
 ## 4. Run the calculator
 
