@@ -1,0 +1,14 @@
+{
+  "course": "Agentic AI",
+  "scheme": "weighted",
+  "cutoffs": {"A+": 97, "A": 93, "A-": 90, "B+": 87, "B": 83, "B-": 80, "C+": 77, "C": 70},
+  "categories": [
+    {"name": "Project", "weight": 50, "scores": [[45, 50]],
+     "remaining": [{"name": "Project milestone 2", "possible": 50}, {"name": "Final project demo", "possible": 100}]},
+    {"name": "Reports", "weight": 30, "scores": [[26, 30], [27, 30]],
+     "remaining": [{"name": "Report 3", "possible": 30}]},
+    {"name": "Paper", "weight": 10, "scores": []},
+    {"name": "Participation/Quizzes", "weight": 10, "drop_lowest": 1, "scores": [[6, 10], [9, 10], [10, 10], [8, 10]],
+     "remaining": [{"name": "Quiz 5", "possible": 10}, {"name": "Quiz 6", "possible": 10}]}
+  ]
+}

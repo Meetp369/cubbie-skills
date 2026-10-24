@@ -1,0 +1,10 @@
+{
+  "course": "ENG 102",
+  "scheme": "points",
+  "cutoffs": {"A": 90, "B": 80, "C": 70},
+  "categories": [
+    {"name": "Essays", "scores": [[85, 100], [92, 100]], "remaining": 100},
+    {"name": "Discussions", "drop_lowest": 1, "scores": [[5, 10], [10, 10], [9, 10]], "remaining": 30},
+    {"name": "Final Exam", "scores": [], "remaining": 200}
+  ]
+}
