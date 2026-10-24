@@ -1,6 +1,6 @@
 ---
 name: grade-rescue
-description: Tells a student exactly what they need on their remaining work (final exam, projects, reports, papers) to get each letter grade, using their real Canvas grades and the syllabus rules. Use when the student asks what marks or score they need, whether they can still get an A, where they stand in a class, or "what if I get X".
+description: Use whenever a student asks how many marks or what score they need to get a grade (A+, A, B...), whether they can still get an A, where they stand in a class, or "what if I get X". Reads Canvas grades and the Canvas Syllabus tab (via the browser if needed) and always replies with a per-item plan of marks needed, using clearly labeled assumptions when the syllabus is missing instead of asking the student first.
 ---
 
 # Grade Rescue
@@ -10,6 +10,8 @@ The moment: the end of the semester is coming and the student wants to know what
 ## Golden rule: always answer with numbers
 
 Never reply with only a question or a request for screenshots. Missing information is normal; fill it with the assumptions below, run the calculator, and give the plan. Then, after the numbers, ask at most one short question that would make it exact. An estimate with clear assumptions is far more useful than no answer.
+
+A labeled estimate is not guessing: the student asked for a target, and the assumptions are stated so they can correct them. Do not rely on numbers or conclusions from earlier in the conversation; re-read Canvas each time and run every step below.
 
 This holds even when the syllabus file can't be opened and Canvas shows only posted grades. Those are the most common cases; handle them with step 3b, not by stopping.
 
