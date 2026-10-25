@@ -1,14 +1,72 @@
 {
   "course": "CSE 540 Blockchain",
   "scheme": "weighted",
-  "cutoffs": {"A+": 97, "A": 93, "A-": 90, "B+": 87, "B": 83},
+  "cutoffs": {
+    "A+": 97,
+    "A": 93,
+    "A-": 90,
+    "B+": 87,
+    "B": 83
+  },
   "categories": [
-    {"name": "Project", "weight": 40, "scores": [],
-     "remaining": [{"name": "Proposal + team contract", "possible": 10}, {"name": "Smart contract draft", "possible": 5}, {"name": "Final project", "possible": 85}]},
-    {"name": "Discussions", "weight": 20, "scores": [],
-     "remaining": [{"name": "Module 1 discussion", "possible": 30}, {"name": "Module 2 discussion", "possible": 30}]},
-    {"name": "Quizzes", "weight": 20, "drop_lowest": 1, "scores": [],
-     "remaining": [{"name": "Module 1 quiz", "possible": 24}, {"name": "Module 2 quiz", "possible": 21}]},
-    {"name": "Final exam", "weight": 20, "scores": []}
-  ]
+    {
+      "name": "Project",
+      "weight": 40,
+      "scores": [],
+      "remaining": [
+        {
+          "name": "Proposal + team contract",
+          "possible": 10
+        },
+        {
+          "name": "Smart contract draft",
+          "possible": 5
+        },
+        {
+          "name": "Final project",
+          "possible": 85
+        }
+      ]
+    },
+    {
+      "name": "Discussions",
+      "weight": 20,
+      "scores": [],
+      "remaining": [
+        {
+          "name": "Module 1 discussion",
+          "possible": 30
+        },
+        {
+          "name": "Module 2 discussion",
+          "possible": 30
+        }
+      ]
+    },
+    {
+      "name": "Quizzes",
+      "weight": 20,
+      "drop_lowest": 1,
+      "scores": [],
+      "remaining": [
+        {
+          "name": "Module 1 quiz",
+          "possible": 24
+        },
+        {
+          "name": "Module 2 quiz",
+          "possible": 21
+        }
+      ]
+    },
+    {
+      "name": "Final exam",
+      "weight": 20,
+      "scores": [],
+      "status": "future"
+    }
+  ],
+  "cutoffs_verified": true,
+  "rules_verified": true,
+  "inventory_complete": true
 }

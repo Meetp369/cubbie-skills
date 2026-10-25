@@ -1,180 +1,153 @@
 ---
 name: grade-rescue
-description: Use whenever a student asks how many marks or what score they need to get a grade (A+, A, B...), whether they can still get an A, where they stand in a class, or "what if I get X". Reads Canvas grades and the Canvas Syllabus tab (via the browser if needed) and always replies with a per-item plan of marks needed, using clearly labeled assumptions when the syllabus is missing instead of asking the student first.
+description: Use when a student asks what score they need for a target grade, whether a grade is still reachable, where they stand, or a grade what-if. Read the full Canvas course and official grading policy, build a complete course model, run the deterministic calculator, and clearly distinguish exact results from provisional estimates.
 ---
 
 # Grade Rescue
 
-The moment: the end of the semester is coming and the student wants to know what they need. Give them a real number in one reply. Do the digging yourself; the student should not have to send screenshots of things Canvas already has.
+Give students a useful numerical answer without pretending incomplete gradebook data is exact. Canvas's displayed current grade is usually based only on graded work; never treat it as percentage points already earned toward the final course grade.
 
-## Golden rule: always answer with numbers
+## Non-negotiable accuracy rules
 
-Never reply with only a question or a request for screenshots. Missing information is normal; fill it with the assumptions below, run the calculator, and give the plan. Then, after the numbers, ask at most one short question that would make it exact. An estimate with clear assumptions is far more useful than no answer.
+1. Re-read the current Canvas course data for every calculation. Do not reuse old grade numbers from chat or memory.
+2. Inventory the **whole term**, including unpublished/future work visible in Assignments, Modules, Calendar, syllabus, announcements, and exam/project schedules.
+3. Use the official syllabus/course policy for category weights, drop rules, extra credit, and letter cutoffs. Canvas assignment-group weights are a fallback/cross-check, not proof of the letter scale.
+4. Never silently assume that A = 93% (or any other cutoff) and call the result exact.
+5. Never call an equal-percentage plan a set of independent minimums. Scores trade off according to final-grade impact.
+6. Never do grade arithmetic yourself. Build JSON and run `scripts/grade.py`.
+7. If an input is unresolved, return a **PROVISIONAL** scenario and name the largest uncertainty. Exact-looking numbers must not hide missing data.
 
-A labeled estimate is not guessing: the student asked for a target, and the assumptions are stated so they can correct them. Do not rely on numbers or conclusions from earlier in the conversation; re-read Canvas each time and run every step below.
+## 1. Select the course
 
-This holds even when the syllabus file can't be opened and Canvas shows only posted grades. Those are the most common cases; handle them with step 3b, not by stopping.
+Match the student's course loosely. If none or several match, ask one short course-selection question. If Canvas is disconnected, ask them to connect it; only then fall back to screenshots/manual data.
 
-## 0. Check saved rules first
+## 2. Build a full-term assignment inventory
 
-Before reading Canvas, look in Memory and in `$SKILL_DATA_DIR/rules/` for this course's saved grading rules (weights, scale, list of assessments). If found, use them and skip step 3.
+Collect every graded and remaining assessment. For each item capture:
+- exact Canvas name
+- assignment group/category
+- earned points if graded
+- points possible
+- due date/status when available
 
-## 1. Find the course
+Cross-check Grades against Assignments, Modules, Calendar, syllabus and announcements. Do not use only the Grades page because unpublished/future work may be absent.
 
-- Match the course name loosely ("agentic ai" → the Canvas course whose name contains it). If several match or none was named, ask with a short numbered list.
-- If Canvas is not connected, ask them to connect it. Only then fall back to asking for a screenshot of their Grades page and the syllabus.
+Set `inventory_complete: true` **only** when you have checked the whole-term sources and can account for all graded and remaining assessments described by official course material. Otherwise set it false.
 
-## 2. Collect ALL assignments from Canvas
+For a future item whose existence is known but points are unknown, put `"possible": null`. Do not invent its point value.
 
-Read assignments for the **whole term** (from the first day of class to the end of finals), never just an upcoming-deadline window. Don't ask the student for permission to do this; it is part of the job.
+## 3. Verify grading rules
 
-The Grades view shows only posted marks, so also read the course's Assignments list, Modules and the Canvas calendar for items not graded yet. Read every assignment in the course, not just the current grade:
-- graded items: points earned and points possible, by assignment group
-- ungraded or not-yet-due items: their points possible, by assignment group. These are the "remaining" work.
+Read the Canvas Syllabus tab and syllabus files; also check official course pages/announcements when needed. Extract:
+- weighted categories, or confirmation that the course is total-points based
+- letter-grade cutoffs including plus/minus grades
+- drop-lowest/drop-highest or replacement rules
+- extra-credit treatment
+- assessments mentioned in policy/schedule but missing from Canvas assignments
 
-Skip excused items. A submitted item graded 0 is a real 0. A past-due item with no grade is ungraded, not 0, unless Canvas marks it missing with a 0.
+Set:
+- `cutoffs_verified: true` only when the requested letter cutoff came from official course policy or the instructor/student explicitly supplied it.
+- `rules_verified: true` only when weights/point scheme and relevant drop/replacement rules were verified against official course policy.
 
-Never answer with only the overall Canvas percentage; it hides what is still to come.
+If Canvas and syllabus conflict, use the official published course policy and mention the discrepancy.
 
-## 3. Read the syllabus yourself
+### Missing policy
 
-In Canvas, the syllabus is usually the **Syllabus tab** in the course menu, not a file. Its address is:
+Do not stop just because one policy detail is unavailable. Build the best provisional model and let the calculator label it. If no cutoffs are available, omit `cutoffs`; the calculator uses its fallback scale and marks the result provisional. After the numbers, ask at most one question about the uncertainty that could change the answer most.
 
-```
-https://<school-canvas>/courses/<course_id>/assignments/syllabus
-```
+Do **not** save assumed rules as verified rules.
 
-(for ASU: `https://canvas.asu.edu/courses/<course_id>/assignments/syllabus`; get `<course_id>` from the Canvas course.)
+## 4. Build calculator JSON
 
-Try in this order until you find the grading section:
-1. The course syllabus through Canvas, if your Canvas ability returns it.
-2. **Open the Syllabus tab in your browser.** The first time, the student signs in to their school account (they take over the browser for Duo or two-factor); the login is saved for next time. Tell them: "I'll open your Canvas syllabus. Please sign in once in the browser I send; I'll remember it."
-3. While in the browser, also open the course's **Grades** page: it shows every assignment, including ungraded ones (shown as "-/100"), and the "Assignments are weighted by group" table with each group's weight.
-4. Course pages, Modules, Files (search "syllabus", "grading"), and announcements.
-
-Extract:
-- category weights (or note that the course uses total points)
-- the letter grade scale, including plus/minus grades if listed (A+, A, A-…). ASU instructors set their own scale, so always use the syllabus scale.
-- dropped scores, and any work not yet on Canvas (a final paper or exam that appears in the syllabus but not in Canvas assignments). Add those to the categories with "scores": [].
-
-If Canvas assignment groups have weights, they must match the syllabus; if they differ, trust the syllabus and mention it.
-
-## 3b. When something is missing, assume and keep going
-
-Use these defaults instead of stopping, and list the ones you used in your reply:
-
-- **No letter scale found:** use the common plus/minus scale `{"A+": 97, "A": 93, "A-": 90, "B+": 87, "B": 83, "B-": 80, "C+": 77, "C": 70, "D": 60}`. Say "I assumed A+ = 97%".
-- **No future assignments on Canvas yet** (instructors often publish them later):
-  - A syllabus category with no grades at all → whole category still to come (`"scores": []`).
-  - A category with some grades → use the syllabus schedule to count how many items are left (e.g. "4 reports" and 2 graded → 2 left, each the same points as the graded ones). If the syllabus doesn't say, treat that category as finished and say so.
-- **Weights:** if you found category weights anywhere (syllabus, a course page, an announcement, or the Canvas weights table), use `"scheme": "weighted"` with those weights, and map each assignment to its category by name. If published weights and the Canvas setup differ, use the published weights. Use `"scheme": "points"` only when no weights exist anywhere.
-
-Ask the student for nothing up front. After giving the numbers, ask one question about the biggest assumption.
-
-If you couldn't read the syllabus (for example, the student didn't sign in in the browser), end like this:
-> This is an estimate: I assumed A+ = 97% and that the paper is still to come.
-> To make it exact, sign in once so I can read your Canvas Syllabus tab, or paste its grading section here. I'll remember it for next time.
-
-## 3c. Save the rules
-
-When the student sends a syllabus (file or photo) or tells you a cutoff, read it, then save the course's rules so you never ask again:
-- remember them in Memory (e.g. "Agentic AI grading: Project 50, Reports 30, Paper 10, Participation 10; A+ 97")
-- write them to `$SKILL_DATA_DIR/rules/<course>.json` in the calculator format, with `scores` empty
-
-Then immediately recalculate and send the exact plan.
-
-## 4. Run the calculator
-
-Write the data to `$SKILL_DATA_DIR/course.json` and run:
-
-```
-python3 scripts/grade.py "$SKILL_DATA_DIR/course.json" --target A
-```
-
-Use `--target` with the grade the student asked for. Leave it out if they didn't name one; the script then plans for the best grade still reachable.
-
-Format (weighted course):
+Weighted example:
 
 ```json
 {
-  "course": "Agentic AI",
+  "course": "CSE 512",
   "scheme": "weighted",
-  "cutoffs": {"A+": 97, "A": 93, "A-": 90, "B+": 87, "B": 83},
+  "cutoffs": {"A": 90, "B": 80},
+  "cutoffs_verified": true,
+  "rules_verified": true,
+  "inventory_complete": true,
   "categories": [
-    {"name": "Project", "weight": 50, "scores": [[45, 50]],
-     "remaining": [{"name": "Project milestone 2", "possible": 50}, {"name": "Final project demo", "possible": 100}]},
-    {"name": "Reports", "weight": 30, "scores": [[26, 30], [27, 30]],
-     "remaining": [{"name": "Report 3", "possible": 30}]},
-    {"name": "Paper", "weight": 10, "scores": []},
-    {"name": "Quizzes", "weight": 10, "drop_lowest": 1, "scores": [[6, 10], [9, 10]],
-     "remaining": [{"name": "Quiz 5", "possible": 10}]}
+    {"name": "Assignments", "weight": 30, "scores": [[100, 100]],
+     "remaining": [{"name": "Assignment 02", "possible": 100}]},
+    {"name": "Group Project", "weight": 25, "scores": [[20, 20]],
+     "remaining": [{"name": "Phase 02", "possible": 30}, {"name": "Phase 03", "possible": 50}]},
+    {"name": "Final Exam", "weight": 10, "scores": [],
+     "remaining": [{"name": "Final Exam", "possible": null}]}
   ]
 }
 ```
 
-- `scores`: graded items as [earned, possible]
-- `remaining`: each ungraded item by its Canvas name with its points possible, so the student sees a per-item plan
-- A category with `"scores": []` and no `remaining` is treated as entirely still to come (e.g. a paper or final exam not yet on Canvas).
-- Points courses: `"scheme": "points"`, no weights, same `scores` and `remaining`.
-- "What if I score 85 on the rest?" → `--what-if 85` instead of `--target`.
+For total-points courses use `"scheme": "points"` and omit weights. A points-based course cannot produce a reliable course-total calculation while a known remaining item's points are unknown; the calculator will error instead of guessing.
 
-If the script prints `ERROR`, tell the student what is missing in plain words.
+For weighted categories, if a future item's points are unknown, use null. The calculator will mark the category unresolved/provisional rather than fabricating a denominator.
 
-Never do the math yourself; always use the script's numbers.
+`drop_lowest` may be added to a category. Set `allow_extra_credit: true` only when scores above points possible are intentional under course policy.
 
-Always calculate for the **whole course** (every category in the syllabus or Canvas weights), never for just the posted items or one category. If nothing is graded yet, still run the script: it handles that and gives the plan.
+## 5. Run the calculator
 
-## 5. Reply
+Write the model to `$SKILL_DATA_DIR/course.json` and run:
 
-Always include the per-item list. If the goal is not reachable, run the script again with `--target` set to the highest reachable grade and give that list. A reply without a per-item list is incomplete.
+```bash
+python3 scripts/grade.py "$SKILL_DATA_DIR/course.json" --target A
+```
 
-Write like a friend texting, not a report. Don't mention schemes, totals, sync times or how you calculated. Keep assumptions to one short line.
+Use the exact grade requested. For a what-if:
 
-Short texts, one idea each:
-1. Where they stand now and how much of the grade is still to come.
-2. The goal and the percentage to aim for, then each remaining item with the marks needed, biggest item first, exactly as the script lists them.
-3. One line that a higher score on a big item gives room on smaller ones.
-4. If the goal is not reachable, say so kindly, give the best possible grade and the plan for the highest reachable grade (run the script again with that `--target`).
-5. One useful note (a dropped score, or the scale you assumed).
+```bash
+python3 scripts/grade.py "$SKILL_DATA_DIR/course.json" --what-if 85
+```
 
-If they ask for a grade that doesn't exist (e.g. "A++"), say in a few words that the highest is A+ and plan for it.
+If the calculator prints `ERROR`, do not bypass it with mental math. Explain the missing/invalid input and, if possible, collect the missing course data.
 
-Example:
-> You're at 89.4% in Agentic AI. 61.5% of your grade is still to come.
+## 6. Interpret output faithfully
+
+### EXACT
+
+You may say "you need" when the calculator says `Status: EXACT`.
+
+Include:
+- current Canvas-style grade on graded work
+- verified target cutoff
+- remaining modeled final-grade weight
+- required average across remaining work
+- equal-percentage target per remaining item
+- a sentence that these item targets are **not independent minimums** and can trade off
+
+### PROVISIONAL
+
+Use words such as "estimate", "under this model", or "provisional". Never present provisional item scores as guaranteed requirements. Include the calculator warning that matters most and ask at most one question that would make the result materially more accurate.
+
+If the final exam or another item's points are unknown, a percentage target for that item is acceptable; do not invent raw marks.
+
+If the requested grade is unreachable, report the best possible result under the model and the highest reachable grade. If useful, rerun for that reachable grade.
+
+## 7. Response style
+
+Be concise and student-friendly, but preserve the accuracy labels. A good response is:
+
+> You're at 99.41% on graded work. This result is **provisional** because the final's point total and the syllabus A cutoff are not verified.
 >
-> For an A (93%), aim for 95.4% on everything left:
-> • Final project demo: 95.5/100
-> • Project milestone 2: 48/50
-> • Report 3: 29/30
-> • Paper: 95%+
-> • Quiz 5 and 6: 10/10 each
+> Under the current model, an A at 93% would require an 85.63% average across the remaining modeled work.
+> • Assignment 02: about 86/100
+> • Phase 02: about 26/30
+> • Phase 03: about 43/50
+> • Final: about 86%
 >
-> Do better on the project and you get a little room on the quizzes.
-> A+ isn't reachable anymore; your best possible is 95.8%.
-
-Example when the goal is out of reach:
-> A+ isn't possible anymore 😕 Even full marks on everything left gets you 94.2%.
+> Those are an equal-percentage plan, not separate minimums—doing better on a higher-impact item can offset another score.
 >
-> But an A (93%) is! Aim for 97% on what's left:
-> • Final project: 97/100
-> • Report 3: 29.5/30
-> • Paper: 97%+
->
-> (I assumed A+ = 97% and A = 93%. If your syllabus says different, paste the grading section and I'll redo it.)
+> The biggest uncertainty is the official A cutoff/final structure. If I can verify that grading section, I can make this exact.
 
-Then offer: "Want to see what happens if you score 90% on everything?" and use `--what-if`.
+Do not say that the student's displayed Canvas grade is their final-course contribution.
 
-## 6. Offer a plan (ask first)
+## 8. Remember verified rules only
 
-Find the next big due dates in Canvas, then offer:
-- a check-in before each remaining deadline (student picks the time; suggest 9 pm the night before)
-- a wake-up call on exam morning, if there is an exam
-- a study guide PDF from the course materials, citing them
+When the student supplies an official syllabus/policy or explicit instructor cutoff, save verified course rules to `$SKILL_DATA_DIR/rules/<course>.json` for reuse. Preserve provenance (for example `source: "syllabus"`) when possible. Never promote fallback assumptions to verified status.
 
-Schedule only what the student says yes to. Remember the course and target grade, and when new grades post, offer to recalculate.
+## 9. Optional follow-up
 
-## Rules
+After answering, you may offer a what-if scenario or a recalculation when new grades post. Schedule reminders/check-ins only with student consent. Never do graded work for the student; offer study planning or explanations instead.
 
-- Help the student learn; never do graded work for them. Never offer to write, draft or "prepare" an assignment, proposal, report or quiz answer. Offer a reminder, a study plan or an explanation of the topic instead.
-- Grades are private; never share or send them anywhere.
-- This is an estimate; the instructor's gradebook is the final word.
+Grades are private. The instructor's gradebook and published course policy are authoritative.
