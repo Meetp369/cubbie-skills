@@ -19,6 +19,23 @@ This holds even when the syllabus file can't be opened and Canvas shows only pos
 
 Before reading Canvas, look in Memory and in `$SKILL_DATA_DIR/rules/` for this course's saved grading rules (weights, scale, list of assessments). If found, use them and skip step 3.
 
+## 0b. Best source: fetch straight from Canvas
+
+Cubbie's own Canvas data can miss the Syllabus tab and ungraded assignments. This Skill's script reads them directly with the student's Canvas token. Run it first:
+
+```
+python3 scripts/canvas.py --course "<course name the student used>" --out "$SKILL_DATA_DIR/course.json"
+```
+
+- It writes the calculator file (weights, every graded and remaining assignment, dropped scores, and the grade scale if Canvas has one) and prints the syllabus grading text.
+- If `CUTOFFS` says not set, read the scale from the printed syllabus text and add `"cutoffs"` to the file. If the syllabus lists different weights than Canvas, use the syllabus weights.
+- Then go straight to step 4 (run `grade.py`).
+
+If it prints:
+- `NO_TOKEN` or `TOKEN_INVALID`: tell the student once, in one line, that they can add a Canvas token for exact answers (Canvas → Account → Settings → New Access Token), then continue with steps 1–3 using Cubbie's own Canvas data.
+- `COURSE_NOT_UNIQUE`: ask which course, using the listed names, then run it again with that name.
+- `ERROR NETWORK` or another error: continue with steps 1–3.
+
 ## 1. Find the course
 
 - Match the course name loosely ("agentic ai" → the Canvas course whose name contains it). If several match or none was named, ask with a short numbered list.
@@ -65,7 +82,7 @@ Use these defaults instead of stopping, and list the ones you used in your reply
 - **No future assignments on Canvas yet** (instructors often publish them later):
   - A syllabus category with no grades at all → whole category still to come (`"scores": []`).
   - A category with some grades → use the syllabus schedule to count how many items are left (e.g. "4 reports" and 2 graded → 2 left, each the same points as the graded ones). If the syllabus doesn't say, treat that category as finished and say so.
-- **No weights found:** use the Canvas assignment group weights; if there are none, use `"scheme": "points"`.
+- **Weights:** if you found category weights anywhere (syllabus, a course page, an announcement, or the Canvas weights table), use `"scheme": "weighted"` with those weights, and map each assignment to its category by name. If published weights and the Canvas setup differ, use the published weights. Use `"scheme": "points"` only when no weights exist anywhere.
 
 Ask the student for nothing up front. After giving the numbers, ask one question about the biggest assumption.
 
@@ -122,6 +139,10 @@ Never do the math yourself; always use the script's numbers.
 
 ## 5. Reply
 
+Always include the per-item list. If the goal is not reachable, run the script again with `--target` set to the highest reachable grade and give that list. A reply without a per-item list is incomplete.
+
+Write like a friend texting, not a report. Don't mention schemes, totals, sync times or how you calculated. Keep assumptions to one short line.
+
 Short texts, one idea each:
 1. Where they stand now and how much of the grade is still to come.
 2. The goal and the percentage to aim for, then each remaining item with the marks needed, biggest item first, exactly as the script lists them.
@@ -143,6 +164,16 @@ Example:
 >
 > Do better on the project and you get a little room on the quizzes.
 > A+ isn't reachable anymore; your best possible is 95.8%.
+
+Example when the goal is out of reach:
+> A+ isn't possible anymore 😕 Even full marks on everything left gets you 94.2%.
+>
+> But an A (93%) is! Aim for 97% on what's left:
+> • Final project: 97/100
+> • Report 3: 29.5/30
+> • Paper: 97%+
+>
+> (I assumed A+ = 97% and A = 93%. If your syllabus says different, paste the grading section and I'll redo it.)
 
 Then offer: "Want to see what happens if you score 90% on everything?" and use `--what-if`.
 

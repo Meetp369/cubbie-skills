@@ -1,0 +1,7 @@
+cubbie: 1
+network:
+  runtime: ["canvas.asu.edu", "*.instructure.com"]
+secrets:
+  - env: CANVAS_API_TOKEN
+    label: Canvas access token
+    help_url: https://canvas.asu.edu/profile/settings
