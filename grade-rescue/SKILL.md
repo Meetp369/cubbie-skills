@@ -19,29 +19,14 @@ This holds even when the syllabus file can't be opened and Canvas shows only pos
 
 Before reading Canvas, look in Memory and in `$SKILL_DATA_DIR/rules/` for this course's saved grading rules (weights, scale, list of assessments). If found, use them and skip step 3.
 
-## 0b. Best source: fetch straight from Canvas
-
-Cubbie's own Canvas data can miss the Syllabus tab and ungraded assignments. This Skill's script reads them directly with the student's Canvas token. Run it first:
-
-```
-python3 scripts/canvas.py --course "<course name the student used>" --out "$SKILL_DATA_DIR/course.json"
-```
-
-- It writes the calculator file (weights, every graded and remaining assignment, dropped scores, and the grade scale if Canvas has one) and prints the syllabus grading text.
-- If `CUTOFFS` says not set, read the scale from the printed syllabus text and add `"cutoffs"` to the file. If the syllabus lists different weights than Canvas, use the syllabus weights.
-- Then go straight to step 4 (run `grade.py`).
-
-If it prints:
-- `NO_TOKEN` or `TOKEN_INVALID`: tell the student once, in one line, that they can add a Canvas token for exact answers (Canvas → Account → Settings → New Access Token), then continue with steps 1–3 using Cubbie's own Canvas data.
-- `COURSE_NOT_UNIQUE`: ask which course, using the listed names, then run it again with that name.
-- `ERROR NETWORK` or another error: continue with steps 1–3.
-
 ## 1. Find the course
 
 - Match the course name loosely ("agentic ai" → the Canvas course whose name contains it). If several match or none was named, ask with a short numbered list.
 - If Canvas is not connected, ask them to connect it. Only then fall back to asking for a screenshot of their Grades page and the syllabus.
 
 ## 2. Collect ALL assignments from Canvas
+
+Read assignments for the **whole term** (from the first day of class to the end of finals), never just an upcoming-deadline window. Don't ask the student for permission to do this; it is part of the job.
 
 The Grades view shows only posted marks, so also read the course's Assignments list, Modules and the Canvas calendar for items not graded yet. Read every assignment in the course, not just the current grade:
 - graded items: points earned and points possible, by assignment group
@@ -137,6 +122,8 @@ If the script prints `ERROR`, tell the student what is missing in plain words.
 
 Never do the math yourself; always use the script's numbers.
 
+Always calculate for the **whole course** (every category in the syllabus or Canvas weights), never for just the posted items or one category. If nothing is graded yet, still run the script: it handles that and gives the plan.
+
 ## 5. Reply
 
 Always include the per-item list. If the goal is not reachable, run the script again with `--target` set to the highest reachable grade and give that list. A reply without a per-item list is incomplete.
@@ -188,6 +175,6 @@ Schedule only what the student says yes to. Remember the course and target grade
 
 ## Rules
 
-- Help the student learn; never do graded work for them.
+- Help the student learn; never do graded work for them. Never offer to write, draft or "prepare" an assignment, proposal, report or quiz answer. Offer a reminder, a study plan or an explanation of the topic instead.
 - Grades are private; never share or send them anywhere.
 - This is an estimate; the instructor's gradebook is the final word.

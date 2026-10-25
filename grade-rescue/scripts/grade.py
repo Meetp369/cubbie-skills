@@ -102,11 +102,14 @@ def analyze(data, notes):
                 cur_den += w
             items += [(n, p, w * p / T) for n, p in rem]
 
+    if W == 0:
+        raise ValueError("No categories or points found, so there is nothing to calculate from.")
     if cur_den == 0:
-        raise ValueError("No graded work yet, so there is nothing to calculate from.")
+        notes.append("Nothing is graded yet, so every item counts toward the goal.")
     if not points and abs(W - 100) > 0.01:
         notes.append(f"Weights add up to {fmt(W)}%, not 100%; scaled to 100%.")
-    return 100 * cur_num / cur_den, A, B, W, items
+    current = 100 * cur_num / cur_den if cur_den else None
+    return current, A, B, W, items
 
 
 def main():
@@ -138,7 +141,10 @@ def main():
         return 100 * (cut / 100 * W - A) / B
 
     print(data.get("course", "Course"))
-    print(f"Current grade (graded work only): {fmt(current)}%")
+    if current is None:
+        print("Current grade: nothing graded yet")
+    else:
+        print(f"Current grade (graded work only): {fmt(current)}%")
 
     if B == 0:
         final = 100 * A / W
